@@ -1,83 +1,80 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import './styles.scss'
+import {
+    Plugin,
+    PluginManifest,
+    MarkdownView,
+    App,
+    Modal,
+    Notice,
+    PluginSettingTab,
+    Setting
+} from 'obsidian';
 
-export default class MyPlugin extends Plugin {
-	onload() {
-		console.log('loading plugin');
+export default class LiterateScripting extends Plugin {
 
-		this.addRibbonIcon('dice', 'Sample Plugin', () => {
-			new Notice('This is a notice!');
-		});
+    constructor(app: App, pluginManifest: PluginManifest) {
+        super(app, pluginManifest);
+    }
 
-		this.addStatusBarItem().setText('Status Bar Text');
+    async onload() {
+        this.registerInterval(
+            window.setInterval(this.injectButtons.bind(this), 1000)
+        );
+    }
 
-		this.addCommand({
-			id: 'open-sample-modal',
-			name: 'Open Sample Modal',
-			// callback: () => {
-			// 	console.log('Simple Callback');
-			// },
-			checkCallback: (checking: boolean) => {
-				let leaf = this.app.workspace.activeLeaf;
-				if (leaf) {
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-					return true;
-				}
-				return false;
-			}
-		});
+    injectButtons() {
+        this.addCopyButtons();
+    }
 
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+    addCopyButtons() {
 
-		this.registerEvent(this.app.on('codemirror', (cm: CodeMirror.Editor) => {
-			console.log('codemirror', cm);
-		}));
+        let a = 1
 
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
+        document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+            const pre = codeBlock.parentNode;
+            let isPython = pre.classList.contains(`language-python`)
+            let isShell = pre.classList.contains(`language-shell`)
+            let hasButton = pre.parentNode.classList.contains('has-run-button')
 
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-	}
+            if (!(isPython || isShell) || hasButton) {
+                return;
+            }
 
-	onunload() {
-		console.log('unloading plugin');
-	}
-}
+            pre.parentNode.classList.add('has-run-button');
+            let button = document.createElement('button');
+            button.className = 'run-code-button';
+            button.type = 'button';
+            button.innerText = 'Run';
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
+            let command = codeBlock.innerText
+            if (isPython) {
+                command = `python3 -c "${command}"`
+            }
 
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
+            function runCommand(command: string) {
+                const {exec} = require("child_process");
+                exec(command, (error, stdout, stderr) => {
+                    if (error) {
+                        console.log(`error: ${error.message}`);
+                        return;
+                    }
+                    if (stderr) {
+                        console.log(`stderr: ${command}`);
+                        console.error(`stderr: ${stderr}`);
+                        return;
+                    }
+                    new Notice(stdout);
+                    console.log(`stdout: ${stdout}`);
+                });
+            }
 
-	onClose() {
-		let {contentEl} = this;
-		contentEl.empty();
-	}
-}
+            button.addEventListener('click', function () {
+                runCommand(command)
+            });
 
-class SampleSettingTab extends PluginSettingTab {
-	display(): void {
-		let {containerEl} = this;
+            pre.appendChild(button);
+        })
 
-		containerEl.empty();
+    }
 
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text.setPlaceholder('Enter your secret')
-				.setValue('')
-				.onChange((value) => {
-					console.log('Secret: ' + value);
-				}));
-
-	}
 }

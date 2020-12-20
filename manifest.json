@@ -1,10 +1,10 @@
 {
-	"id": "literate-scripting",
-	"name": "Literate Scripting for obsidian",
-	"version": "0.0.1",
-	"minAppVersion": "0.9.12",
-	"description": "Allows to execute scripts from obsidian.",
-	"author": "Pelao",
-	"authorUrl": "https://cristianvasquez.me",
-	"isDesktopOnly": false
+  "id": "literate-scripting",
+  "name": "Literate Scripting for obsidian",
+  "version": "0.0.1",
+  "minAppVersion": "0.9.12",
+  "description": "Allows to execute scripts from obsidian.",
+  "author": "Pelao",
+  "authorUrl": "https://cristianvasquez.me",
+  "isDesktopOnly": false
 }

@@ -9,7 +9,7 @@ This plugin allows you to run snippets from inside obsidian.md
 
 It's intended for simple uses, like starting a service, running a program, etc. I've tested this only in Linux, and is experimental.
 
-The plugin reads your 'snippet plugin settings' that contains the configuration for each language.
+The plugin reads your 'snippet plugin settings' that contain the configuration for each language.
 
 ## Usage
 
@@ -70,19 +70,19 @@ readme.md
 This is the config by default. It contains one entry for each language.
 
 ```json
-{  
-    'python': {  
-        template: 'python3 -c "{{src}}"',  
-        showModal: true,  
-        appendOutputContents: true,  
-        showRunButtonInPreview: true,  
-    },  
-    'sh': {  
-        template: '{{src}}',  
-        showModal: true,  
-        appendOutputContents: true,  
-        showRunButtonInPreview: true,  
-    }  
+{
+  "python": {
+    "template": "python3 -c \"{{src}}\"",
+    "showModal": true,
+    "appendOutputContents": true,
+    "showRunButtonInPreview": true
+  },
+  "sh": {
+    "template": "{{src}}",
+    "showModal": true,
+    "appendOutputContents": true,
+    "showRunButtonInPreview": true
+  }
 }
 ```
 

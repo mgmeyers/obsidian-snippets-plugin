@@ -96,8 +96,21 @@ This is the config by default. It contains one entry for each language.
 
 ## Manual installation
 
-TODO
+Install dependencies
 
+```
+npm install
+```
+
+Generate main.js bundle
+
+```
+npm run build
+```
+
+Copy main.js, manifest.json and styles.css to your vault's plugins folder, 
+under [YourVaultFolder]/.obsidian/plugins/review-obsidian/.
+   
 ## Observations
 
 This prototype is super experimental; I've written it because I wanted to use python inside obsidian. Forgive me for my bad Javascript; I don't really know it.

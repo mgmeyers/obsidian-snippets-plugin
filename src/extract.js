@@ -1,4 +1,6 @@
-function extract(src, lineNumber) {
+const DEFAULT = require('./consts');
+
+function extract(src, lineNumber, variants = DEFAULT.variants) {
 
     function is(line, target) {
         let str = line.trim()
@@ -10,14 +12,22 @@ function extract(src, lineNumber) {
     let end = null
     let lang = null
 
+    function fenceOpeningWithKey(line) {
+        for (var key of Object.keys(variants)) {
+            if (is(line, '```' + key)) {
+                return key
+            }
+        }
+        return null
+    }
+
+
     for (let i = lineNumber; i >= 0; i--) {
-        if (is(lines[i], '```shell')) {
+
+        let key = fenceOpeningWithKey(lines[i])
+        if (key) {
             begin = i;
-            lang = 'shell'
-            break
-        } else if (is(lines[i], '```python')) {
-            begin = i;
-            lang = 'python'
+            lang = key
             break
         } else if (i !== lineNumber && is(lines[i], '```')) {
             begin = null
@@ -45,4 +55,4 @@ function extract(src, lineNumber) {
 
 }
 
-module.exports = extract;
+module.exports = extract

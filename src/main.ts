@@ -8,6 +8,9 @@ import extract from "./extract"
 // @ts-ignore
 import runner from "./runner"
 
+// @ts-ignore
+import DEFAULT from "./consts"
+
 import {
     Plugin,
     PluginManifest,
@@ -30,13 +33,13 @@ export default class RunSnippets extends Plugin {
 
     async onload() {
 
-        console.log("Loading Run-Snippet-Plugin");
+        console.log("Loading Snippets-plugin");
         this.settings = (await this.loadData()) || new RunSnippetsSettings();
         this.addSettingTab(new RunSnippetsSettingsTab(this.app, this));
 
         this.addCommand({
-            id: "run-snippets",
-            name: "Run snippet",
+            id: "snippets-plugin",
+            name: "Run",
             callback: () => this.runSnippet(),
             hotkeys: [
                 {
@@ -74,18 +77,45 @@ export default class RunSnippets extends Plugin {
         }
     }
 
-
+    /**
+     * Adds buttons for the preview mode
+     */
     addRunButtons() {
 
 
         let vars = this.get_vars();
+        let variants = this.settings.variants
+
         document.querySelectorAll("pre > code").forEach(function (codeBlock) {
             const pre = codeBlock.parentNode;
-            let isPython = pre.classList.contains(`language-python`);
-            let isShell = pre.classList.contains(`language-shell`);
             let hasButton = pre.parentNode.classList.contains("has-run-button");
 
-            if (!(isPython || isShell) || hasButton) {
+            // Already has a button
+            if (hasButton) {
+                return;
+            }
+
+            function definedVariant(classList, variants) {
+                for (var key of Object.keys(variants)) {
+                    if (classList.contains(`language-${key}`)) {
+                        return key
+                    }
+                }
+                return null
+
+            }
+
+            let lang = definedVariant(pre.classList, variants)
+
+            // No variant defined for this language
+            if (lang == null) {
+                return;
+            }
+            // @ts-ignore
+            let variant = variants[lang]
+
+            // Not active in preview
+            if (!variant.showRunButtonInPreview) {
                 return;
             }
 
@@ -95,35 +125,36 @@ export default class RunSnippets extends Plugin {
             button.type = "button";
             button.innerText = "Run";
 
-            let command = codeBlock.innerText;
+            let src = codeBlock.innerText;
 
-            if (isPython) {
-                command = apply_template('python', command, vars)
-            } else if (isShell) {
-                command = apply_template('shell', command, vars)
-            } else {
-                throw Error('not suported')
-            }
+            let command = apply_template(src, variant.template, vars)
 
             function runCommand(command: string) {
                 const {exec} = require("child_process");
                 button.innerText = "Running";
                 exec(command, (error, stdout, stderr) => {
                     if (error) {
-                        console.log(`error: ${error.message}`);
-                        new Notice(error.message);
+                        console.error(`error: ${error.message}`);
+                        if (variant.showModal){
+                            new Notice(error.message);
+                        }
                         button.innerText = "error";
                         return;
                     }
                     if (stderr) {
                         console.error(`stderr: ${stderr}`);
-                        new Notice(stderr);
+                        if (variant.showModal){
+                            new Notice(stderr);
+                        }
                         button.innerText = "error";
                         return;
                     }
-                    new Notice(stdout);
+                    console.debug(`stdout: ${stdout}`);
+
+                    if (variant.showModal){
+                        new Notice(stdout);
+                    }
                     button.innerText = "Run";
-                    console.log(`stdout: ${stdout}`);
                 });
             }
 
@@ -135,37 +166,59 @@ export default class RunSnippets extends Plugin {
         });
     }
 
+    /**
+     * rus a snippet, when the cursor is on top of it
+     */
     runSnippet() {
         let vars = this.get_vars();
-
+        let variants = this.settings.variants
 
         const view = this.app.workspace.activeLeaf.view;
         if (view instanceof MarkdownView) {
 
             const editor = view.sourceMode.cmEditor;
 
-            let src = editor.getDoc().getValue()
+            let document = editor.getDoc().getValue()
             let line = editor.getCursor().line
 
-            let contents = extract(src, line)
-            if (contents !== null) {
-                let outputLine = contents.end + 1
-                let command = apply_template(contents.lang, contents.text, vars)
-                const {exec} = require("child_process");
+            let match = extract(document, line, variants)
 
+            if (match !== null) {
+                let targetLine = match.end + 1
+                let lang = match.lang
+                // @ts-ignore
+                let variant = variants[lang]
+                let command = apply_template(match.text, variant.template, vars)
+
+                const {exec} = require("child_process");
                 exec(command, (error, stdout, stderr) => {
                     if (error) {
-                        console.log(`error: ${error.message}`);
-                        writeResult(editor, error, outputLine)
+                        console.error(`error: ${error.message}`);
+                        if (variant.appendOutputContents) {
+                            writeResult(editor, error, targetLine)
+                        }
+                        if (variant.showModal){
+                            new Notice(error.message);
+                        }
                         return;
                     }
                     if (stderr) {
                         console.error(`stderr: ${stderr}`);
-                        writeResult(editor, stderr, outputLine)
+                        if (variant.appendOutputContents) {
+                            writeResult(editor, stderr, targetLine)
+                        }
+                        if (variant.showModal){
+                            new Notice(stderr);
+                        }
                         return;
                     }
-                    console.log(`stdout: ${stdout}`);
-                    writeResult(editor, stdout, outputLine)
+                    console.debug(`stdout: ${stdout}`);
+                    if (variant.appendOutputContents) {
+                        writeResult(editor, stdout, targetLine)
+                    }
+                    if (variant.showModal){
+                        new Notice(stdout);
+                    }
                 });
 
             }
@@ -175,29 +228,26 @@ export default class RunSnippets extends Plugin {
 
 function writeResult(editor, result: string, outputLine: number) {
 
-    let output = `\`\`\`output
+    let output = `\n\`\`\`output
 ${result}    
 \`\`\`
 `
-
     editor.getDoc().replaceRange(output, {line: outputLine, ch: 0});
 
 }
 
-function apply_template(lang: string, command: string, vars) {
-    if (lang == 'python') {
-        command = `${vars.python} "${command}"`;
-    }
-    command = command.replace('{{vault_path}}', vars.vault_path)
-    command = command.replace('{{folder}}', vars.folder)
-    command = command.replace('{{file_name}}', vars.file_name)
-    command = command.replace('{{file_path}}', vars.file_path)
-    return command
+function apply_template(src: string, template: string, vars: object) {
+    let result = template.replace('{{src}}', src)
+    result = result.replace('{{vault_path}}', vars.vault_path)
+    result = result.replace('{{folder}}', vars.folder)
+    result = result.replace('{{file_name}}', vars.file_name)
+    result = result.replace('{{file_path}}', vars.file_path)
+    return result
 }
 
 
 class RunSnippetsSettings {
-    python = 'python3 -c';
+    variants: object = DEFAULT.variants;
 }
 
 class RunSnippetsSettingsTab extends PluginSettingTab {
@@ -215,18 +265,34 @@ class RunSnippetsSettingsTab extends PluginSettingTab {
         containerEl.empty();
 
         this.containerEl.createEl("h3", {
-            text: "Run Snippets Settings",
+            text: "Snippets",
         });
 
-        new Setting(this.containerEl)
-            .setName("Python")
-            .setDesc("command")
-            .addText(text => text.setPlaceholder('python3 -c')
-                .setValue('')
-                .onChange((value) => {
-                    settings.python = value;
-                    this.plugin.saveData(settings);
-                }));
+        new Setting(containerEl)
+            .setName('Code fences')
+            .setDesc('config for each language')
+            .addTextArea((text) => {
+                text
+                    .setPlaceholder(JSON.stringify(DEFAULT.variants, null, 2))
+                    .setValue(JSON.stringify(this.plugin.settings.variants, null, 2) || '')
+                    .onChange((value) => {
+                        try {
+                            const newValue = JSON.parse(value);
+                            this.plugin.settings.variants = newValue;
+                            this.plugin.saveData(this.plugin.settings);
+                        } catch (e) {
+                            return false;
+                        }
+
+                    });
+                text.inputEl.rows = 12;
+                text.inputEl.cols = 60;
+            });
+
+        this.containerEl.createEl("h4", {
+            text: "This plugin is experimental",
+        });
+
     }
 
 }

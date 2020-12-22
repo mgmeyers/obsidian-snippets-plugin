@@ -28,7 +28,7 @@ test('detects code', () => {
 1
 # Miscelaneous 2 
 3
-\`\`\`shell
+\`\`\`sh
 echo tango number 5
 echo \n number 7
 \`\`\`
@@ -41,9 +41,12 @@ Other text 12
     let hit = {
         "begin": 4,
         "end": 8,
-        "lang": "shell",
+        "lang": "sh",
         "text": "echo tango number 5\necho \n number 7"
     }
+
+    expect(extract(src, 8)).toStrictEqual(hit);
+
 
     expect(extract(src, 2)).not.toBe('code');
     expect(extract(src, 3)).not.toBe('code');
@@ -75,7 +78,7 @@ test('detects code', () => {
 var='I\\'m elegant you know...'
 \`\`\`     
 
-\`\`\`shell
+\`\`\`sh
 echo don't mix us!
 \`\`\` `
 
@@ -89,7 +92,7 @@ echo don't mix us!
     const hit_2 = {
         "begin": 4,
         "end": 6,
-        "lang": "shell",
+        "lang": "sh",
         "text": "echo don't mix us!"
     }
 
@@ -103,4 +106,5 @@ echo don't mix us!
     expect(extract(src, 6)).toStrictEqual(hit_2);
 
 });
+
 

@@ -1,6 +1,6 @@
 {
-  "id": "literate-scripting",
-  "name": "Literate Scripting for obsidian",
+  "id": "run-snippets",
+  "name": "Run snippets",
   "version": "0.0.1",
   "minAppVersion": "0.9.12",
   "description": "Allows to execute scripts from obsidian.",

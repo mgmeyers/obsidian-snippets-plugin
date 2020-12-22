@@ -3,7 +3,7 @@ date updated: '2020-12-22'
 
 ---
 
-# Snippets plugin
+# Run Snippets plugin
 
 This plugin allows you to run snippets from inside obsidian.md
 

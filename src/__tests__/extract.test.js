@@ -15,11 +15,11 @@ print('Hello world')
         "text": "print('Hello world')"
     }
 
-    expect(extract(src, 0)).not.toBe(hit);
+    expect(extract(src, 0)).toStrictEqual(null);
     expect(extract(src, 1)).toStrictEqual(hit);
     expect(extract(src, 2)).toStrictEqual(hit);
     expect(extract(src, 3)).toStrictEqual(hit);
-    expect(extract(src, 4)).not.toBe(hit);
+    expect(extract(src, 4)).toStrictEqual(null);
 });
 
 
@@ -45,18 +45,15 @@ Other text 12
         "text": "echo tango number 5\necho \n number 7"
     }
 
-    expect(extract(src, 8)).toStrictEqual(hit);
-
-
-    expect(extract(src, 2)).not.toBe('code');
-    expect(extract(src, 3)).not.toBe('code');
+    expect(extract(src, 2)).toStrictEqual(null);
+    expect(extract(src, 3)).toStrictEqual(null);
     expect(extract(src, 4)).toStrictEqual(hit);
     expect(extract(src, 5)).toStrictEqual(hit);
     expect(extract(src, 6)).toStrictEqual(hit);
     expect(extract(src, 7)).toStrictEqual(hit);
     expect(extract(src, 8)).toStrictEqual(hit);
-    expect(extract(src, 9)).not.toBe('code');
-    expect(extract(src, 10)).not.toBe('code');
+    expect(extract(src, 9)).toStrictEqual(null);
+    expect(extract(src, 10)).toStrictEqual(null);
 
 });
 

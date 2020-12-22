@@ -1,7 +1,7 @@
 {
-  "name": "literate-scripting",
+  "name": "obsidian-snippets-plugin",
   "version": "0.0.1",
-  "description": "Literate scripting",
+  "description": "Obsidian Snippets plugin",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
@@ -11,7 +11,7 @@
   "keywords": [
     ""
   ],
-  "author": "Pelao",
+  "author": "Cristian Vasquez",
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^15.1.0",

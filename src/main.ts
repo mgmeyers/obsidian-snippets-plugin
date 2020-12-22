@@ -23,9 +23,26 @@ import {
 } from "obsidian";
 
 
+interface RunSnippetsSettings {
+    variants: string;
+}
+
+const DEFAULT_SETTINGS: RunSnippetsSettings = {
+    variants: DEFAULT.variants
+}
+
+
 export default class RunSnippets extends Plugin {
     constructor(app: App, pluginManifest: PluginManifest) {
         super(app, pluginManifest);
+    }
+
+    async loadSettings() {
+        this.settings = Object.assign(DEFAULT_SETTINGS, await this.loadData());
+    }
+
+    async saveSettings() {
+        await this.saveData(this.settings);
     }
 
     // This field stores your plugin settings.
@@ -34,7 +51,8 @@ export default class RunSnippets extends Plugin {
     async onload() {
 
         console.log("Loading Snippets-plugin");
-        this.settings = (await this.loadData()) || new RunSnippetsSettings();
+        await this.loadSettings();
+
         this.addSettingTab(new RunSnippetsSettingsTab(this.app, this));
 
         this.addCommand({
@@ -135,7 +153,7 @@ export default class RunSnippets extends Plugin {
                 exec(command, (error, stdout, stderr) => {
                     if (error) {
                         console.error(`error: ${error.message}`);
-                        if (variant.showModal){
+                        if (variant.showModal) {
                             new Notice(error.message);
                         }
                         button.innerText = "error";
@@ -143,7 +161,7 @@ export default class RunSnippets extends Plugin {
                     }
                     if (stderr) {
                         console.error(`stderr: ${stderr}`);
-                        if (variant.showModal){
+                        if (variant.showModal) {
                             new Notice(stderr);
                         }
                         button.innerText = "error";
@@ -151,7 +169,7 @@ export default class RunSnippets extends Plugin {
                     }
                     console.debug(`stdout: ${stdout}`);
 
-                    if (variant.showModal){
+                    if (variant.showModal) {
                         new Notice(stdout);
                     }
                     button.innerText = "Run";
@@ -197,7 +215,7 @@ export default class RunSnippets extends Plugin {
                         if (variant.appendOutputContents) {
                             writeResult(editor, error, targetLine)
                         }
-                        if (variant.showModal){
+                        if (variant.showModal) {
                             new Notice(error.message);
                         }
                         return;
@@ -207,7 +225,7 @@ export default class RunSnippets extends Plugin {
                         if (variant.appendOutputContents) {
                             writeResult(editor, stderr, targetLine)
                         }
-                        if (variant.showModal){
+                        if (variant.showModal) {
                             new Notice(stderr);
                         }
                         return;
@@ -216,7 +234,7 @@ export default class RunSnippets extends Plugin {
                     if (variant.appendOutputContents) {
                         writeResult(editor, stdout, targetLine)
                     }
-                    if (variant.showModal){
+                    if (variant.showModal) {
                         new Notice(stdout);
                     }
                 });
@@ -246,10 +264,6 @@ function apply_template(src: string, template: string, vars: object) {
 }
 
 
-class RunSnippetsSettings {
-    variants: object = DEFAULT.variants;
-}
-
 class RunSnippetsSettingsTab extends PluginSettingTab {
     plugin: RunSnippets;
 
@@ -268,26 +282,27 @@ class RunSnippetsSettingsTab extends PluginSettingTab {
             text: "Snippets",
         });
 
+
         new Setting(containerEl)
             .setName('Code fences')
             .setDesc('config for each language')
-            .addTextArea((text) => {
-                text
-                    .setPlaceholder(JSON.stringify(DEFAULT.variants, null, 2))
-                    .setValue(JSON.stringify(this.plugin.settings.variants, null, 2) || '')
-                    .onChange((value) => {
-                        try {
-                            const newValue = JSON.parse(value);
-                            this.plugin.settings.variants = newValue;
-                            this.plugin.saveData(this.plugin.settings);
-                        } catch (e) {
-                            return false;
-                        }
-
-                    });
-                text.inputEl.rows = 12;
-                text.inputEl.cols = 60;
-            });
+            .addTextArea(text => {
+                    text
+                        .setPlaceholder(JSON.stringify(DEFAULT.variants, null, 2))
+                        .setValue(JSON.stringify(this.plugin.settings.variants, null, 2) || '')
+                        .onChange(async (value) => {
+                            try {
+                                const newValue = JSON.parse(value);
+                                this.plugin.settings.variants = newValue;
+                                await this.plugin.saveSettings();
+                            } catch (e) {
+                                return false;
+                            }
+                        })
+                    text.inputEl.rows = 12;
+                    text.inputEl.cols = 60;
+                }
+            );
 
         this.containerEl.createEl("h4", {
             text: "This plugin is experimental",

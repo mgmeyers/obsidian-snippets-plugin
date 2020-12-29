@@ -113,7 +113,7 @@ under [YourVaultFolder]/.obsidian/plugins/review-obsidian/.
    
 ## Observations
 
-This prototype is super experimental; I've written it because I wanted to use python inside obsidian. Forgive me for my bad Javascript; I don't really know it.
+This prototype is super experimental; I've written it because I wanted to use python inside obsidian.
 
 ## Developers
 

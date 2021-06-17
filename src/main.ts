@@ -79,7 +79,7 @@ export default class RunSnippets extends Plugin {
     get_vars(): Promise<String> {
         let active_view = app.workspace.getActiveViewOfType(MarkdownView);
         if (active_view == null) {
-            throw new Error("Active view is null");
+            return;
         }
 
         let vaultPath = this.app.vault.adapter.basePath;

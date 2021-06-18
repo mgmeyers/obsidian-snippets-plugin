@@ -77,6 +77,12 @@ This is the config by default. It contains one entry for each language.
     "appendOutputContents": true,
     "showRunButtonInPreview": true
   },
+  "javascript": {
+    "template": "node -e \"{{src}}\"",
+    "showModal": true,
+    "appendOutputContents": true,
+    "showRunButtonInPreview": true
+  },
   "sh": {
     "template": "{{src}}",
     "showModal": true,

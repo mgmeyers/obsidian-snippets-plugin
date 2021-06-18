@@ -1,5 +1,5 @@
 ---
-date updated: '2020-12-22'
+date updated: '2021-06-18'
 
 ---
 
@@ -109,7 +109,7 @@ npm run build
 ```
 
 Copy main.js, manifest.json and styles.css to your vault's plugins folder, 
-under [YourVaultFolder]/.obsidian/plugins/review-obsidian/.
+under [YourVaultFolder]/.obsidian/plugins/obsidian-snippets/.
    
 ## Observations
 

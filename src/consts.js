@@ -5,6 +5,12 @@ const DEFAULT_VARIANTS = {
         appendOutputContents: true,
         showRunButtonInPreview: true,
     },
+    'javascript': {
+        template: 'node -e "{{src}}"',
+        showModal: true,
+        appendOutputContents: true,
+        showRunButtonInPreview: true,
+    },
     'sh': {
         template: '{{src}}',
         showModal: true,

@@ -153,7 +153,7 @@ export default class RunSnippets extends Plugin {
             function runCommand(command: string) {
                 const {exec} = require("child_process");
                 button.innerText = "Running";
-                exec(command, (error, stdout, stderr) => {
+                exec(command, {'shell':'powershell.exe'}, (error, stdout, stderr) => {
                     if (error) {
                         console.error(`error: ${error.message}`);
                         if (variant.showModal) {
@@ -215,7 +215,7 @@ export default class RunSnippets extends Plugin {
                 let command = apply_template(match.text, variant.template, vars)
 
                 const {exec} = require("child_process");
-                exec(command, (error, stdout, stderr) => {
+                exec(command, {'shell':'powershell.exe'}, (error, stdout, stderr) => {
                     if (error) {
                         console.error(`error: ${error.message}`);
                         if (variant.appendOutputContents) {
